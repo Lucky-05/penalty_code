@@ -1,0 +1,33 @@
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.unityproj
+*.suo
+.vs/
+.idea/
+.DS_Store
+# pruebas fuera de Unity
+!/dotnet/Core.Tests/Core.Tests.csproj
+/dotnet/**/bin/
+/dotnet/**/obj/
+
+# fuentes de arte pesadas (exportaciones de MetaHuman, FBX crudos)
+/ArteFuente/
+
+# MetaHuman importado: pesa ~90 MB y se regenera con los scripts de penales-metahuman + MetaHumanBuilder
+/Assets/Penales/Art/MetaHuman/
+/Assets/Penales/Art/MetaHuman.meta
+
+# foto 360 del estadio (25 MB, de Poly Haven, CC0): se vuelve a bajar
+/Assets/Penales/Art/Stadium/*.hdr

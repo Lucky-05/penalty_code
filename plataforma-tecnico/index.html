@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco del técnico</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --panel2:#f3f4f7; --line:#e6e8ee; --text:#0f172a; --dim:#667085;
+  --ink:#0b1f3a; --accent:#2563eb; --ok:#059669; --warn:#b45309; --bad:#dc2626;
+  --mono:"SF Mono",ui-monospace,Menlo,monospace; --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,sans-serif;-webkit-font-smoothing:antialiased}
+.app{display:grid;grid-template-columns:232px 1fr;height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:46px 14px 16px;-webkit-app-region:drag}
+.brand{display:flex;gap:11px;align-items:center;padding:0 8px 22px}
+.brand svg{width:34px;height:34px;flex:none}
+.brand b{display:block;font-size:15px;letter-spacing:-.2px;line-height:1.2}
+.brand span{font-size:11.5px;color:var(--dim)}
+nav{display:flex;flex-direction:column;gap:2px;-webkit-app-region:no-drag}
+nav button{all:unset;cursor:pointer;padding:9px 12px;border-radius:9px;color:#475467;font-weight:500;font-size:13.5px}
+nav button:hover{background:var(--panel2)}
+nav button.on{background:#eef3ff;color:var(--accent);font-weight:600}
+.side-foot{margin-top:auto;padding:12px 8px 0;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);-webkit-app-region:no-drag}
+#status{font-family:var(--mono);font-size:11.5px;color:var(--text);display:block;margin-top:4px}
+.work{display:flex;flex-direction:column;min-width:0;height:100vh}
+header{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:14px 26px;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);-webkit-app-region:drag}
+header>*{-webkit-app-region:no-drag}
+header h1{font-size:20px;margin:0;letter-spacing:-.4px;font-weight:650}
+h2{font-size:11.5px;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);margin:0 0 12px;font-weight:600}
+h3{font-size:15px;margin:0 0 12px;letter-spacing:-.2px}
+button,select,input{font:inherit;color:var(--text);background:var(--panel);border:1px solid #d6dae3;border-radius:9px;padding:6px 12px}
+button{cursor:pointer;font-weight:500;font-size:13px;box-shadow:0 1px 1px rgba(16,24,40,.04)}
+button:hover{border-color:#98a2b3}
+button.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+button.stop{color:var(--bad);border-color:#f3c7c7}
+button:disabled{opacity:.45;cursor:default}
+input[type=number]{width:88px}
+.group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:.7px;padding:4px 10px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--dim)}
+.badge.sim{background:#fff7e6;border-color:#f5d48a;color:#92600a}
+button.rec{color:#b42318;border-color:#f3b8b2;font-weight:600}
+button.rec.on{background:#d92d20;border-color:#d92d20;color:#fff}
+button.rec:disabled{opacity:.45}
+.recstate{font-size:12.5px;font-weight:600;color:#b42318;font-variant-numeric:tabular-nums;min-width:10px}
+#replayBar{display:none;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:12px 16px;border-radius:12px;background:#eef4ff;border:1px solid #b6ccfb;color:#1e3a8a;font-size:14px}
+#replayBar.on{display:flex}
+.badge.rec{background:#eef4ff;border-color:#b6ccfb;color:#1e40af}
+.badge.live{background:#e8f8f0;border-color:#9bdcbd;color:#04724d}
+main{padding:22px 26px 48px;overflow-y:auto;flex:1}
+main>*{max-width:1640px;margin-left:auto;margin-right:auto}
+#notice{display:none;margin-bottom:14px;padding:10px 14px;border-radius:10px;background:#fff7e6;border:1px solid #f5d48a;color:#7a4b00}
+.bar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:10px}
+.bar label{color:var(--dim);font-size:12.5px}
+#pos{flex:1;min-width:160px;padding:0;border:0;box-shadow:none;accent-color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+#scopes canvas,#timeline{display:block;width:100%;margin-bottom:6px}
+#scopes canvas{height:150px}
+#timeline{height:88px;margin-bottom:0}
+.tab{display:none}
+.tab.on{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.card h3 i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:1px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px}
+.kpi b{display:block;font:600 22px/1.15 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.kpi b small{font-size:11.5px;color:var(--dim);font-weight:500;margin-left:3px;letter-spacing:0}
+.kpi span{font-size:11.5px;color:var(--dim)}
+.note{font-size:12.5px;color:var(--dim);margin:12px 0 0}
+.note.warn{color:var(--warn)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--dim);font-weight:600;font-size:11.5px;position:sticky;top:0;background:var(--panel)}
+th:first-child,td:first-child{text-align:left}
+td{font-family:var(--mono);font-size:12px;color:#475467}
+tr:hover td{background:#fafbfc}
+td.txt,#gloss td{font-family:inherit;font-size:13px;white-space:normal;text-align:left}
+#gloss td:nth-child(3){font-family:var(--mono);font-size:12px;white-space:nowrap}
+#gloss td:first-child{font-weight:600;color:var(--text)}
+tr.strong td{color:var(--text);font-weight:500}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px}
+.stack>*+*{margin-top:14px}
+.plot{display:block;width:100%;height:300px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px 26px}
+.form label{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#475467;font-size:13px}
+pre{background:#0b1f3a;border-radius:10px;padding:14px 16px;overflow-x:auto;font:12px/1.55 var(--mono);color:#dbe4f3;margin:10px 0 0}
+.hero{display:grid;grid-template-columns:280px 1.25fr 1fr;gap:14px;margin-bottom:14px}
+#leg{display:block;width:190px;margin:2px auto 8px}
+.lvl{margin-top:12px}
+.lvl div.top{display:flex;justify-content:space-between;align-items:baseline}
+.lvl b{font:650 28px/1 -apple-system,"SF Pro Display",sans-serif;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+.lvl b small{font-size:11.5px;color:var(--dim);font-weight:500;margin-left:4px;letter-spacing:0}
+.lvl .name{font-weight:600}
+.meter{height:6px;border-radius:99px;background:var(--panel2);margin-top:7px;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:99px;width:0;transition:width .12s linear}
+#reads{list-style:none;margin:0;padding:0}
+#reads li{display:grid;grid-template-columns:12px 1fr;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+#reads li:first-child{padding-top:0}
+#reads li:last-child{border-bottom:0}
+#reads i{width:9px;height:9px;border-radius:50%;margin-top:6px}
+#reads b{display:block;font-size:13.5px;letter-spacing:-.1px}
+#reads span{color:#475467;font-size:13px}
+#sessionLine{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 14px;padding:0}
+#sessionLine span{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--dim);box-shadow:var(--shadow)}
+#sessionLine b{display:block;color:var(--text);font-size:17px;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+@media (max-width:1180px){.hero{grid-template-columns:1fr}}
+@media (max-width:820px){.app{grid-template-columns:1fr;height:auto}aside{padding:14px 16px;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}nav{flex-direction:row;flex-wrap:wrap}.side-foot{display:none}.brand{padding:0}.work{height:auto}main{padding:16px;overflow:visible}header{padding:12px 16px}.two{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="brand">
+    <svg viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#0b1f3a"/><path d="M5 21h7l2-6 3 14 4-20 3 16 2-6h9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div><b>Banco del técnico</b><span>EMG de muslo</span></div>
+  </div>
+  <nav id="nav">
+    <button data-t="resumen" class="on">Panel</button>
+    <button data-t="sesiones">Sesiones</button>
+    <button data-t="contr">Contracciones</button>
+    <button data-t="golpeos">Golpeos</button>
+    <button data-t="espectro">Espectro</button>
+    <button data-t="fatiga">Fatiga</button>
+    <button data-t="conexion">Señal y conexión</button>
+    <button data-t="glosario">Glosario</button>
+  </nav>
+  <div class="side-foot">Cuádriceps e isquiotibiales<span id="status">—</span></div>
+</aside>
+<div class="work">
+<header>
+  <h1 id="viewTitle">Panel</h1>
+  <span id="srcBadge" class="badge">SIN SEÑAL</span>
+  <span class="spacer"></span>
+  <div class="group">
+    <button id="bRest" disabled title="Jugador relajado durante 3 s">Calibrar reposo</button>
+    <span id="mvcBtns" class="group"></span>
+    <button id="bMark" disabled title="Barra espaciadora">Marcar golpeo</button>
+  </div>
+  <div class="group">
+    <input id="pac" placeholder="Código paciente (P001)" maxlength="32" style="width:190px">
+    <button id="bRec" class="rec" title="Graba la sesión en la nube (Supabase)">● Grabar</button>
+    <span id="recState" class="recstate"></span>
+  </div>
+  <div class="group" style="display:none">
+    <button id="bGame">En vivo</button>
+    <button id="bSerial">Conectar Arduino</button>
+    <button id="bCsv">Abrir CSV</button>
+    <input id="fCsv" type="file" accept=".csv,.txt" hidden>
+    <button id="bStop" class="stop" disabled>Detener</button>
+  </div>
+</header>
+<main>
+  <div id="replayBar"><span>Estás viendo una <b>sesión grabada</b>: <span id="replayName"></span></span><button id="bBack" class="primary">← Volver a en vivo</button></div>
+  <div id="notice"></div>
+  <section id="t-resumen" class="tab on">
+  <p id="sessionLine"></p>
+  <section class="hero">
+    <div class="card"><h2>Muslo en vivo</h2>
+      <svg id="leg" viewBox="0 0 200 250" aria-label="Muslo visto de lado">
+        <path id="legQ" d="M98,14 C52,26 38,120 66,206 L98,212 Z" fill="#2563eb" fill-opacity=".15" stroke="#2563eb" stroke-width="2"/>
+        <path id="legH" d="M102,14 C148,26 162,120 134,206 L102,212 Z" fill="#ea580c" fill-opacity=".15" stroke="#ea580c" stroke-width="2"/>
+        <circle cx="100" cy="228" r="16" fill="none" stroke="#c5cad6" stroke-width="2"/>
+        <text x="22" y="244" fill="#667085" font-size="12">frente</text><text x="146" y="244" fill="#667085" font-size="12">atrás</text>
+      </svg>
+      <div id="legNums"></div>
+    </div>
+    <div class="card"><h2>Golpeo promedio</h2><canvas id="pEns" class="plot" style="height:330px"></canvas><p id="ensNote" class="note"></p></div>
+    <div class="card"><h2>Lectura para el técnico</h2><ul id="reads"></ul><p class="note">Lecturas orientativas con criterios genéricos; no sustituyen la valoración de un profesional.</p></div>
+  </section>
+  <div class="card" style="margin-bottom:14px"><h2>Señal en vivo</h2>
+  <div class="bar">
+    <label>Ventana <select id="span"><option value="5">5 s</option><option value="10" selected>10 s</option><option value="20">20 s</option><option value="60">60 s</option></select></label>
+    <input id="pos" type="range" min="0" max="0" value="0" disabled>
+    <button id="bExpSig" disabled>Exportar señal</button>
+    <button id="bExpBursts" disabled>Exportar contracciones</button>
+  </div>
+  <div id="scopes"></div>
+  <canvas id="timeline"></canvas>
+
+  </div>
+    <div id="cards" class="cards"></div>
+    <div class="card" style="margin-top:14px"><h2>Todas las métricas de la sesión</h2><div class="scroll"><table id="tAll"></table></div></div>
+  </section>
+  <section id="t-contr" class="tab"><div class="card"><h2>Cada contracción detectada</h2><div class="scroll" style="max-height:560px;overflow-y:auto"><table id="tBursts"></table></div>
+    <p class="note">En blanco, las contracciones fuertes (al menos la mitad del pico más alto del músculo). El inicio se marca donde la envolvente cruza el umbral; con la envolvente a 6 Hz puede adelantarse unos 40 ms en arranques muy bruscos.</p></div></section>
+  <section id="t-golpeos" class="tab"><div class="card"><h2>Cada golpeo, pierna de golpeo</h2><div class="scroll"><table id="tKicks"></table></div><p id="kickNote" class="note"></p></div></section>
+  <section id="t-espectro" class="tab"><div class="two">
+    <div class="card"><h2>Densidad espectral de potencia</h2><canvas id="pSpec" class="plot"></canvas><p class="note">Calculada solo con los tramos de contracción (Welch, ventana de Hann, 50 % de traslape). Línea continua: frecuencia media. Línea punteada: frecuencia mediana.</p></div>
+    <div class="card"><h2>Lectura del espectro</h2><div class="scroll"><table id="tSpec"></table></div><p id="specNote" class="note"></p></div>
+  </div></section>
+  <section id="t-fatiga" class="tab stack"><div class="two">
+    <div class="card"><h2>Frecuencia mediana por contracción</h2><canvas id="pMdf" class="plot"></canvas></div>
+    <div class="card"><h2>RMS por contracción</h2><canvas id="pRms" class="plot"></canvas></div>
+  </div><div class="card"><h2>Tendencia</h2><div class="scroll"><table id="tFat"></table></div>
+    <p class="note">Solo contracciones fuertes. La firma clásica de fatiga es que la frecuencia mediana baja mientras el RMS sube para el mismo esfuerzo. Con menos de 8 contracciones la tendencia no es confiable, y en gestos explosivos como el golpeo la frecuencia mediana varía mucho de una repetición a otra.</p></div></section>
+  <section id="t-conexion" class="tab stack">
+    <div class="card"><h2>Adquisición</h2><div class="form" id="fAcq"></div><p class="note">Los cambios de canales o de frecuencia de muestreo se aplican al iniciar la siguiente captura.</p></div>
+    <div class="card"><h2>Procesamiento digital</h2><div class="form" id="fDsp"></div></div>
+    <div class="card"><h2>Cadena digital que aplica la plataforma</h2><div class="scroll"><table id="tChain"></table></div></div>
+    <div class="card"><h2>Programa para el Arduino UNO</h2>
+      <p class="note">Envía una línea por muestra con los canales separados por comas. No lo he probado en tu placa: verifica en «fs medida» que llegue la frecuencia que configuraste.</p>
+      <pre id="sketch"></pre></div>
+  </section>
+  <section id="t-sesiones" class="tab"><div class="card"><h2>Sesiones grabadas</h2>
+    <div class="group" style="margin:4px 0 14px;flex-wrap:wrap"><input id="fPac" placeholder="Filtrar por código de paciente" style="min-width:240px">
+      <button id="bRefresh">Actualizar</button><button id="bLive" class="primary">Volver al juego en vivo</button></div>
+    <div class="scroll"><table id="tSes"></table></div>
+    <p id="sesNote" class="note"></p></div></section>
+  <section id="t-glosario" class="tab"><div class="card"><h2>Qué significa cada número</h2><div class="scroll"><table id="gloss"></table></div></div></section>
+</main>
+</div>
+</div>
+<script src="dsp.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

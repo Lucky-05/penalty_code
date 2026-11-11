@@ -1,0 +1,17 @@
+{
+  "name": "banco-del-tecnico",
+  "productName": "Banco del técnico",
+  "version": "1.0.0",
+  "description": "Electromiografía de cuádriceps e isquiotibiales para el cuerpo técnico",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node pruebas.js",
+    "app": "electron-packager . \"Banco del técnico\" --platform=darwin --arch=arm64 --icon=icono.icns --out=dist --overwrite --ignore=\"^/(dist|pruebas\\.js|icono\\.(svg|iconset)|\\.git)\""
+  },
+  "devDependencies": {
+    "@electron/packager": "^20.3.0",
+    "electron": "^44.7.0"
+  }
+}

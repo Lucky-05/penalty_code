@@ -1,0 +1,7 @@
+﻿<Solution>
+  <Project Path="Penales.Tests.csproj" />
+  <Project Path="Penales.Core.csproj" />
+  <Project Path="Penales.Game.csproj" />
+  <Project Path="Penales.Editor.csproj" />
+  <Project Path="Penales.PlayTests.csproj" />
+</Solution>
