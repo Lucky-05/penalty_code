@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &997217555
+--- !u!1 &616106662
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,8 +127,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 997217557}
-  - component: {fileID: 997217556}
+  - component: {fileID: 616106664}
+  - component: {fileID: 616106663}
   m_Layer: 0
   m_Name: Cancha provisional
   m_TagString: Untagged
@@ -136,13 +136,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &997217556
+--- !u!114 &616106663
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 997217555}
+  m_GameObject: {fileID: 616106662}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b94cd76f051f47d3984e09718fb7f2d, type: 3}
@@ -150,17 +150,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Penales.Game::Penales.Game.GrayboxBootstrap
   Difficulty: 1
   Seed: 0
-  ShooterPrefab: {fileID: 5236873423991813890, guid: 83c4cf75210ff4e0aa2d80594d03a030, type: 3}
-  KeeperPrefab: {fileID: 6804785032338073114, guid: a11f64597ba9a40c2929ffcae51eae15, type: 3}
-  StadiumSky: {fileID: 8900000, guid: afe4c973e432949deb3b891deccd3929, type: 3}
+  ShooterPrefab: {fileID: 1446180585467310741, guid: d541ddfe27e5c47dbbebf537dbe9fb35, type: 3}
+  KeeperPrefab: {fileID: 784997163862849293, guid: a9c82ef957d9649fa8f2ae1c03ff36b8, type: 3}
+  StadiumSky: {fileID: 8900000, guid: 05171884c2afe4e0b9b3e04305cd7600, type: 3}
   SkyRotation: 90
---- !u!4 &997217557
+--- !u!4 &616106664
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 997217555}
+  m_GameObject: {fileID: 616106662}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -173,4 +173,4 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 997217557}
+  - {fileID: 616106664}

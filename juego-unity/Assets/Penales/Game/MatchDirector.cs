@@ -60,12 +60,14 @@ namespace Penales.Game
         {
             // Configuración EMG al inicio: contracción máxima de cada canal -> umbral de tiro al 70 %.
             Hud.Visible = false;
+            if (Emg != null) Emg.Situation = "configuración EMG";
             if (EmgSetup != null) yield return EmgSetup.Run();
 
             while (true)
             {
                 Hud.Visible = false;
                 Menu.ShowMain(_teams);
+                if (Emg != null) Emg.Situation = "menú principal (elige modo con teclado/ratón; los tiros se ignoran)";
                 while (!Menu.Confirmed)
                 {
                     UnityEngine.InputSystem.Keyboard k = UnityEngine.InputSystem.Keyboard.current;
@@ -148,11 +150,13 @@ namespace Penales.Game
             while (!_shootout.IsOver && !_abort)
             {
                 bool playerKicks = _shootout.Next == Side.Home;
+                if (Emg != null) { Emg.ClearKicks(); Emg.Situation = playerKicks ? "turno del canal 1 (local)" : "turno del canal 2 (rival)"; }
                 ResetPositions(playerKicks);
                 yield return new WaitForSeconds(0.6f);
                 if (playerKicks) yield return PlayerKicks();
                 else yield return PlayerSaves();
                 if (_abort) break;
+                if (Emg != null) Emg.Situation = "festejo entre turnos (los tiros se ignoran)";
                 for (float t = 0f; t < 1.9f; t += Time.deltaTime)
                 {
                     Shooter.React(_lastScored, t);

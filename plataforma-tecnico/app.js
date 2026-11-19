@@ -238,6 +238,10 @@
       else if (d === 'KICK,2') S.events.push({ t: t, label: 'Tiro A3', info: true });
       else if (d === 'SIN_ARDUINO') notice('El juego está abierto pero el Arduino está desconectado. Conecta el USB; la señal regresa sola.');
       else if (d === 'LISTO' && gotData) notice('');
+      else if (d.indexOf('VREF,') === 0) {          // la placa dice a cuántos voltios equivale su lectura máxima
+        const v = parseFloat(d.slice(5));
+        if (isFinite(v) && v > 0 && v !== S.cfg.vref) { S.cfg.vref = v; buildForms(); }
+      }
     });
     es.onerror = function () {
       if (game !== es) return;

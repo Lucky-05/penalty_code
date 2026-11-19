@@ -22,10 +22,29 @@ namespace Penales.Game
         public const int ListenPort = 5005;
         public const int CommandPort = 5006;
 
-        /// <summary>Verdadero solo el cuadro en que llegó un pico del canal 1 (A2, equipo local).</summary>
-        public bool KickHome { get; private set; }
-        /// <summary>Verdadero solo el cuadro en que llegó un pico del canal 2 (A3, equipo rival).</summary>
-        public bool KickAway { get; private set; }
+        /// <summary>Cuánto tiempo se guarda un pico sin usar: si llega justo antes de que empiece el
+        /// turno (mientras se acomoda la cámara), todavía cuenta.</summary>
+        public const float KickMemory = 1.0f;
+
+        /// <summary>Hubo un pico del canal 1 (A2, equipo local) en el último <see cref="KickMemory"/>.
+        /// Leerlo lo consume.</summary>
+        public bool KickHome => Take(0);
+        /// <summary>Hubo un pico del canal 2 (A3, equipo rival) en el último <see cref="KickMemory"/>.
+        /// Leerlo lo consume.</summary>
+        public bool KickAway => Take(1);
+
+        private readonly float[] _kickAt = { -999f, -999f };
+
+        private bool Take(int ch)
+        {
+            if (Time.unscaledTime - _kickAt[ch] > KickMemory) return false;
+            _kickAt[ch] = -999f;
+            Debug.Log("[EMG] tiro del canal " + (ch + 1) + " usado por el juego");
+            return true;
+        }
+
+        /// <summary>Olvida los picos guardados (al empezar un turno, para no arrastrar los del anterior).</summary>
+        public void ClearKicks() { _kickAt[0] = _kickAt[1] = -999f; }
         /// <summary>Llegan datos del Arduino: el rival lo juega el canal 2 y no la máquina.</summary>
         public bool Live => Time.unscaledTime - _lastData < 1.5f;
 
@@ -55,6 +74,9 @@ namespace Penales.Game
             Send("U" + (ch + 1) + "=" + value.ToString("0.0", CultureInfo.InvariantCulture) + "\n");
         }
 
+        /// <summary>Qué está haciendo el juego (para la bitácora): lo actualiza MatchDirector.</summary>
+        public string Situation = "inicio";
+
         /// <summary>Nombres que se muestran junto a cada barra.</summary>
         public string HomeName = "Local";
         public string AwayName = "Rival";
@@ -76,6 +98,9 @@ namespace Penales.Game
 
         private void OnEnable()
         {
+            // El técnico mira el Banco mientras el paciente juega: sin esto, el juego se congela al
+            // perder el foco y los tiros del EMG se pierden.
+            Application.runInBackground = true;
             try
             {
                 _udp = new UdpClient(new IPEndPoint(IPAddress.Loopback, ListenPort));
@@ -146,8 +171,8 @@ namespace Penales.Game
 
         private void Update()
         {
-            KickHome = Interlocked.Exchange(ref _pendingHome, 0) > 0;
-            KickAway = Interlocked.Exchange(ref _pendingAway, 0) > 0;
+            if (Interlocked.Exchange(ref _pendingHome, 0) > 0) { _kickAt[0] = Time.unscaledTime; Debug.Log("[EMG] KICK,1 recibido · " + Situation); }
+            if (Interlocked.Exchange(ref _pendingAway, 0) > 0) { _kickAt[1] = Time.unscaledTime; Debug.Log("[EMG] KICK,2 recibido · " + Situation); }
             if (_gotPacket) { _gotPacket = false; _lastPacket = Time.unscaledTime; }
             if (_gotData) { _gotData = false; _lastData = Time.unscaledTime; }
             if (_resendThresholds)

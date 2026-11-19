@@ -38,7 +38,24 @@
 
 const uint32_t BAUDIOS       = 460800;   // el flujo crudo (2 canales a 1 kHz) no cabe en 115200
 const uint32_t TS_US         = 1000;     // periodo de muestreo
+#if defined(ESP32)
+// ESP32: ADC de 12 bits. Usar solo pines del ADC1 (el ADC2 no sirve con WiFi).
+// Atenuación 0 dB: rango ≈ 0–1.1 V. La salida del amplificador reposa en ~0.1–0.2 V, así que este
+// rango tiene el piso más bajo y 3x más resolución. Si algún día se centra en 1.65 V: ADC_11db y 3.1.
+const int      BITS_ADC      = 12;
+const uint8_t  PIN_CANAL1    = 34;       // GPIO34 (ADC1_CH6)
+const uint8_t  PIN_CANAL2    = 35;       // GPIO35 (ADC1_CH7)
+#define        ATENUACION      ADC_0db
+const float    FONDO_V       = 1.1;      // voltios que corresponden a la lectura máxima del ADC
+#else
 const int      BITS_ADC      = 14;       // el R4 tiene ADC de 14 bits
+const uint8_t  PIN_CANAL1    = A2;
+const uint8_t  PIN_CANAL2    = A3;
+const float    FONDO_V       = 5.0;
+#endif
+// Ganancia digital: multiplica cada lectura antes de filtrar (no agrega resolución; solo escala
+// la señal para que las barras y los umbrales del juego la vean). Se cambia en vivo con "G=<v>".
+float ganancia = 1.0;
 const int      N_SOBRE       = 8;        // lecturas por muestra (≈230 µs por canal)
 const float    ESCALA_ADC    = (float)(1 << (BITS_ADC - 10));   // todo se expresa en cuentas de 10 bits
 const float    FS            = 1000.0;   // Hz
@@ -108,7 +125,7 @@ struct Canal {
       float v = analogRead(pin);
       suma += v; mn = min(mn, v); mx = max(mx, v);
     }
-    return (suma - mn - mx) / (N_SOBRE - 2) / ESCALA_ADC;
+    return (suma - mn - mx) / (N_SOBRE - 2) / ESCALA_ADC * ganancia;
   }
   void muestrear() {
     crudo = leer();
@@ -156,6 +173,29 @@ bool flujo = false;                      // 'S': manda la señal cruda cada mili
 uint32_t tSig, tReporte = 0, tCal = 0;
 uint32_t usMax = 0, resincros = 0;       // diagnóstico de tiempo ('d')
 
+void reportarEscala() {                  // el Banco del técnico la usa para convertir a µV
+  Serial.print(F("VREF,")); Serial.println(FONDO_V / ganancia, 4);
+}
+
+// "MV,<prom1>,<min1>,<max1>,<prom2>,<min2>,<max2>": voltaje real en cada pin (mV, calibrado de
+// fábrica) durante ~0.2 s, para comparar con el multímetro. Solo ESP32.
+void reportarMilivolts() {
+#if defined(ESP32)
+  Serial.print(F("MV"));
+  for (auto pin : {PIN_CANAL1, PIN_CANAL2}) {
+    uint32_t suma = 0, mn = 99999, mx = 0;
+    const int N = 200;
+    for (int i = 0; i < N; i++) {
+      uint32_t v = analogReadMilliVolts(pin);
+      suma += v; mn = min(mn, v); mx = max(mx, v);
+      delayMicroseconds(1000);
+    }
+    Serial.print(','); Serial.print(suma / N); Serial.print(','); Serial.print(mn); Serial.print(','); Serial.print(mx);
+  }
+  Serial.println();
+#endif
+}
+
 void iniciarCalibracion() {
   calibrando = true; tCal = millis();
   for (auto &c : canales) c.empezarCal();
@@ -166,8 +206,13 @@ void setup() {
   Serial.begin(BAUDIOS);
   Serial.setTimeout(50);                 // para leer el número de 'U' sin bloquear
   analogReadResolution(BITS_ADC);
-  canales[0].pin = A2; canales[0].numero = 1;
-  canales[1].pin = A3; canales[1].numero = 2;
+#if defined(ESP32)
+  analogSetAttenuation(ATENUACION);
+#endif
+  reportarEscala();
+  reportarMilivolts();
+  canales[0].pin = PIN_CANAL1; canales[0].numero = 1;
+  canales[1].pin = PIN_CANAL2; canales[1].numero = 2;
   for (auto &c : canales) c.iniciar();
   aEnv = 1 - exp(-2 * PI * F_ENV / FS);
   aBase = 1 - exp(-1.0 / (TAU_BASE_S * FS));
@@ -228,7 +273,15 @@ void loop() {
     else if (ch == '-') canales[0].exigencia = max(0.3f, canales[0].exigencia / 1.15f);
     else if (ch == ']') canales[1].exigencia *= 1.15;
     else if (ch == '[') canales[1].exigencia = max(0.3f, canales[1].exigencia / 1.15f);
-    else if (ch == 'S') flujo = true;
+    else if (ch == 'G') {                // "G=<v>": ganancia digital (1 a 200)
+      Serial.read();                     // el '='
+      float g = Serial.parseFloat();
+      if (g >= 1 && g <= 200) { ganancia = g; iniciarCalibracion(); }   // la base cambia: recalibra
+      Serial.print(F("GANANCIA,")); Serial.println(ganancia, 1);
+      reportarEscala();
+    }
+    else if (ch == 'V') { reportarMilivolts(); tSig = micros(); }   // pausa ~0.4 s el muestreo
+    else if (ch == 'S') { flujo = true; reportarEscala(); }
     else if (ch == 's') flujo = false;
     else if (ch == 'd') {                // "DIAG,<µs máx. de lectura+filtros>,<resincronizaciones>,<crudo1>,<crudo2>"
       Serial.print(F("DIAG,")); Serial.print(usMax); Serial.print(','); Serial.print(resincros);
